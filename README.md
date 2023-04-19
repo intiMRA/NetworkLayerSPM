@@ -1,3 +1,3 @@
 # NetworkLayerSPM
 
-A description of this package.
+This is a simple API Layer
