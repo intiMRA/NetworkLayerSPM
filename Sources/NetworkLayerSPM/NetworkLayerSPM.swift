@@ -5,27 +5,31 @@
 //
 import Foundation
 
-protocol DecoderProtocol {
+public protocol NetworkLayerURLBuilder {
+    func url() -> URL?
+}
+
+public protocol DecoderProtocol {
     func decode<T>(_ type: T.Type, from data: Data) throws -> T where T : Decodable
 }
 
-protocol EncoderProtocol {
+public protocol EncoderProtocol {
     func encode<T>(_ value: T) throws -> Data where T : Encodable
 }
 extension JSONDecoder: DecoderProtocol {}
 extension JSONEncoder: EncoderProtocol {}
 
-enum HTTPMethod: String {
+public enum HTTPMethod: String {
     case GET
     case POST
     case PUT
     case DELETE
 }
 
-enum NetworkLayerUtils {
+public enum NetworkLayerUtils {
     private static let decoder = JSONDecoder()
-    static let encoder = JSONEncoder()
-    static func defaultDecoder(
+    public static let encoder = JSONEncoder()
+    public static func defaultDecoder(
         keyDecodingStrategy: JSONDecoder.KeyDecodingStrategy = .convertFromSnakeCase
     ) -> JSONDecoder {
         
@@ -40,21 +44,21 @@ extension Encodable {
     }
 }
 
-struct NetworkLayerRequest {
-    let url: String
+public struct NetworkLayerRequest {
+    let urlBuilder: NetworkLayerURLBuilder
     let headers: [String: String]?
     let body: Data?
     let requestTimeOut: Float?
     let httpMethod: HTTPMethod
     
-    init(url: String,
+    public init(urlBuilder: NetworkLayerURLBuilder,
                 headers: [String: String]? = nil,
                 reqBody: Encodable? = nil,
                 reqTimeout: Float? = nil,
                 httpMethod: HTTPMethod,
                 encoder: EncoderProtocol = NetworkLayerUtils.encoder
     ) {
-        self.url = url
+        self.urlBuilder = urlBuilder
         self.headers = headers
         self.body = reqBody?.encode(encoder: encoder)
         self.requestTimeOut = reqTimeout
@@ -70,35 +74,35 @@ struct NetworkLayerRequest {
     }
 }
 
-struct NetworkLayerError: Error {
+public struct NetworkLayerError: Error {
     let title: String
     let message: String
 }
 
-protocol NetworkLayerProtocol {
+public protocol NetworkLayerProtocol {
     var requestTimeOut: Float { get }
     
     func request<ResponseType: Decodable>(_ req: NetworkLayerRequest, decoder: DecoderProtocol) async throws -> ResponseType
 }
 
-actor NetworkLayer: NetworkLayerProtocol {
+public actor NetworkLayer: NetworkLayerProtocol {
     
-    static let defaultNetworkLayer = NetworkLayer()
+    public static let defaultNetworkLayer = NetworkLayer()
     
-    let requestTimeOut: Float
+    public let requestTimeOut: Float
     
-    init(requestTimeOut: Float = 30) {
+    public init(requestTimeOut: Float = 30) {
         self.requestTimeOut = requestTimeOut
     }
     
-    func request<ResponseType: Decodable>(
+    public func request<ResponseType: Decodable>(
         _ req: NetworkLayerRequest,
         decoder: DecoderProtocol = NetworkLayerUtils.defaultDecoder()) async throws -> ResponseType {
             
             let sessionConfig = URLSessionConfiguration.default
             sessionConfig.timeoutIntervalForRequest = TimeInterval(req.requestTimeOut ?? requestTimeOut)
             
-            guard let url = URL(string: req.url) else {
+            guard let url = req.urlBuilder.url() else {
                 throw NetworkLayerError(
                     title: "Invalid Url",
                     message: "The Url you are trying to call in not valid"
