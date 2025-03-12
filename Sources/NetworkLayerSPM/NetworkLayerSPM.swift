@@ -97,7 +97,7 @@ public actor NetworkLayer: NetworkLayerProtocol {
     
     public func request<ResponseType: Decodable>(
         _ req: NetworkLayerRequest,
-        cachingPolicy: NSURLRequest.CachePolicy,
+        cachingPolicy: NSURLRequest.CachePolicy = .reloadIgnoringLocalAndRemoteCacheData,
         decoder: DecoderProtocol = NetworkLayerUtils.defaultDecoder()) async throws -> ResponseType {
             
             var sessionConfig = URLSessionConfiguration.default
