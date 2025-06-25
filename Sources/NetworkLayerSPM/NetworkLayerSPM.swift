@@ -82,7 +82,7 @@ public struct NetworkLayerError: Error {
 public protocol NetworkLayerProtocol {
     var requestTimeOut: Float { get }
     
-    func request<ResponseType: Decodable>(_ req: NetworkLayerRequest, cachingPolicy: NSURLRequest.CachePolicy, decoder: DecoderProtocol) async throws -> ResponseType
+    func request<ResponseType: Decodable>(_ req: NetworkLayerRequest, cachingPolicy: NSURLRequest.CachePolicy, decoder: DecoderProtocol & Sendable) async throws -> ResponseType
 }
 
 public actor NetworkLayer: NetworkLayerProtocol {
@@ -98,9 +98,9 @@ public actor NetworkLayer: NetworkLayerProtocol {
     public func request<ResponseType: Decodable>(
         _ req: NetworkLayerRequest,
         cachingPolicy: NSURLRequest.CachePolicy = .reloadIgnoringLocalAndRemoteCacheData,
-        decoder: DecoderProtocol = NetworkLayerUtils.defaultDecoder()) async throws -> ResponseType {
+        decoder: DecoderProtocol & Sendable = NetworkLayerUtils.defaultDecoder()) async throws -> ResponseType {
             
-            var sessionConfig = URLSessionConfiguration.default
+            let sessionConfig = URLSessionConfiguration.default
             sessionConfig.requestCachePolicy = cachingPolicy
             sessionConfig.timeoutIntervalForRequest = TimeInterval(req.requestTimeOut ?? requestTimeOut)
             
