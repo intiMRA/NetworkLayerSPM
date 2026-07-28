@@ -1,4 +1,4 @@
-// swift-tools-version: 5.7
+// swift-tools-version: 6.0
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -17,5 +17,8 @@ let package = Package(
         .target(
             name: "NetworkLayerSPM",
             dependencies: []),
+        .testTarget(
+            name: "NetworkLayerSPMTests",
+            dependencies: ["NetworkLayerSPM"]),
     ]
 )
