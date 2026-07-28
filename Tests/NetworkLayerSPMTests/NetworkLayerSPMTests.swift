@@ -2,8 +2,6 @@ import Testing
 import Foundation
 @testable import NetworkLayerSPM
 
-// A Sendable consumer URL builder — mirrors how apps conform, and exercises the
-// `NetworkLayerURLBuilder: Sendable` requirement at compile time.
 private enum TestEndpoint: NetworkLayerURLBuilder {
     case valid
     case invalid
@@ -16,7 +14,6 @@ private enum TestEndpoint: NetworkLayerURLBuilder {
     }
 }
 
-// A Decodable & Sendable response — mirrors an app response model.
 private struct SamplePayload: Decodable, Sendable, Equatable {
     let firstName: String
     let count: Int
@@ -63,8 +60,6 @@ struct NetworkLayerDecoderTests {
 @Suite
 struct NetworkLayerExecutionTests {
     @Test func requestThrowsNetworkLayerErrorForInvalidURL() async {
-        // Also a full Swift 6 consumer round-trip: a Sendable URL builder + a
-        // Decodable & Sendable result crossing the actor boundary must compile.
         let request = NetworkLayerRequest(urlBuilder: TestEndpoint.invalid, httpMethod: .GET)
         await #expect(throws: NetworkLayerError.self) {
             let _: SamplePayload = try await NetworkLayer.defaultNetworkLayer.request(request)
